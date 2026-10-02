@@ -1,0 +1,12 @@
+[Unit]
+Description=Placeholder origin for dogwalker.aidanlenahan.com (replace with the real app)
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 -m http.server 5173 --bind 127.0.0.1 --directory /root/dogwalker/deploy/placeholder
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target

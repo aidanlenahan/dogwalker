@@ -1,0 +1,13 @@
+[Unit]
+Description=Cloudflare Tunnel for the Dogwalker PWA
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/cloudflared --config /root/dogwalker/cloudflared/config.yml tunnel run dogwalker-pwa
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
