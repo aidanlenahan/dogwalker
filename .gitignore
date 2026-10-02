@@ -1,0 +1,9 @@
+.claude/
+.env
+node_modules/
+dist/
+coverage/
+npm-debug.log
+yarn-error.log
+.vscode/
+*.log
