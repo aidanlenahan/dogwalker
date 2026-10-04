@@ -3,5 +3,5 @@ credentials-file: /root/.cloudflared/9fa111ae-a471-41df-b234-f33591db153e.json
 
 ingress:
   - hostname: dogwalker.aidanlenahan.com
-    service: http://127.0.0.1:5173
+    service: http://127.0.0.1:8080
   - service: http_status:404

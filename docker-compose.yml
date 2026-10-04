@@ -1,0 +1,49 @@
+# Local development stack: http://localhost:5173
+#   cp .env.example .env && docker compose up
+# Only the Vite dev server is published. Postgres and the API stay on the compose network.
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: dogwalker
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: dogwalker
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./deploy/docker-initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dogwalker"]
+      interval: 2s
+      retries: 30
+
+  backend:
+    build: ./backend
+    environment:
+      DOGWALKER_ENV: development
+      DOGWALKER_DATABASE_URL: postgresql+psycopg://dogwalker:${POSTGRES_PASSWORD}@postgres:5432/dogwalker
+      DOGWALKER_TEST_DATABASE_URL: postgresql+psycopg://dogwalker:${POSTGRES_PASSWORD}@postgres:5432/dogwalker_test
+      DOGWALKER_COOKIE_SECURE: "false"
+    volumes:
+      - ./backend:/app/backend
+      - /app/backend/.venv
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    image: node:22
+    working_dir: /app/frontend
+    command: sh -c "npm ci && npm run dev"
+    environment:
+      VITE_HOST: 0.0.0.0
+      VITE_API_PROXY: http://backend:8000
+    volumes:
+      - ./frontend:/app/frontend
+      - /app/frontend/node_modules
+    ports:
+      - "127.0.0.1:5173:5173"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:

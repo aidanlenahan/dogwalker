@@ -1,0 +1,4 @@
+dist
+dev-dist
+public/*.png
+public/*.ico

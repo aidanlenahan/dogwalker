@@ -8,3 +8,11 @@ yarn-error.log
 .vscode/
 *.log
 chatlogs/*
+# Python
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+
+# Frontend
+dev-dist/

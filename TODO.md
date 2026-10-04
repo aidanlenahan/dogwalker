@@ -1,6 +1,6 @@
 # TODO
 
-Source: [PRD.md](PRD.md). Ordered by what has to exist first, then by priority (the core workflow is **Start → Record → Finish → Review → Publish → Share**), then by feasibility/risk.
+Source: [docs/PRD.md](docs/PRD.md). Ordered by what has to exist first, then by priority (the core workflow is **Start → Record → Finish → Review → Publish → Share**), then by feasibility/risk.
 
 This order differs from the PRD milestones in a few places:
 
@@ -16,38 +16,38 @@ This order differs from the PRD milestones in a few places:
 
 - [x] Cloudflare Tunnel `dogwalker-pwa` → `dogwalker.aidanlenahan.com` (systemd: `cloudflared-dogwalker`)
 - [x] Placeholder origin on `127.0.0.1:5173` (systemd: `dogwalker-placeholder`)
-- [ ] Confirm the placeholder page loads in a phone browser over HTTPS
+- [X] Confirm the placeholder page loads in a phone browser over HTTPS
 - [ ] Cloudflare: make sure share links (`/w/*`), `/u/*` and `/api/*` aren't blocked by the bot challenge for normal clients and link-preview fetchers (WAF skip rule or lower Security Level for this hostname)
 
 ## Phase 1 — Foundation (PRD §34, §28–31, Milestone 1)
 
 Repo & tooling
-- [ ] Monorepo layout: `frontend/`, `backend/`, `docs/` (move `PRD.md` there), `README.md`
-- [ ] `.env.example` with all required settings; real `.env` stays git-ignored
-- [ ] `docker-compose.yml` for local dev: postgres (no published port in prod), backend, frontend
-- [ ] Basic lint/format/test setup for both halves
+- [x] Monorepo layout: `frontend/`, `backend/`, `docs/` (move `PRD.md` there), `README.md`
+- [x] `.env.example` with all required settings; real `.env` stays git-ignored
+- [x] `docker-compose.yml` for local dev: postgres (no published port in prod), backend, frontend (written, not yet run: Docker isn't installed on this host)
+- [x] Basic lint/format/test setup for both halves
 
 Backend (FastAPI)
-- [ ] App skeleton, settings from env vars, `/api/health`
-- [ ] PostgreSQL connection + migrations (e.g. SQLAlchemy + Alembic)
-- [ ] Initial schema: `users`, `dogs`, `walks`, `walk_events`, `gps_points`, `photos`, `testimonials` (PRD §31)
+- [x] App skeleton, settings from env vars, `/api/health`
+- [x] PostgreSQL connection + migrations (e.g. SQLAlchemy + Alembic)
+- [x] Initial schema: `users`, `dogs`, `walks`, `walk_events`, `gps_points`, `photos`, `testimonials` (PRD §31)
   - `walks.status`: `created | active | completed | published`
   - `walks.visibility`: `private | unlisted | public`
   - `walks.share_token`: unique, nullable, never sequential
-- [ ] Auth: login, logout, persistent session (httpOnly secure cookie), modern password hashing (argon2/bcrypt), multi-user capable
-- [ ] CLI/script to create the walker account (no public sign-up)
-- [ ] Ownership checks on every management endpoint (server-side, PRD §25)
+- [x] Auth: login, logout, persistent session (httpOnly secure cookie), modern password hashing (argon2/bcrypt), multi-user capable
+- [x] CLI/script to create the walker account (no public sign-up)
+- [x] Ownership checks on every management endpoint (server-side, PRD §25): `get_owned()` helper in `app/deps.py`; use it in every Phase 3+ endpoint
 
 Frontend (React + TypeScript + Vite)
-- [ ] App skeleton, router with PRD §28 routes (stubs OK)
-- [ ] API client (`services/api.ts`) with session handling
-- [ ] Login page + auth guard, logout
-- [ ] Mobile-first layout shell, large touch targets
-- [ ] PWA: manifest, icons, standalone display, service worker with app-shell caching
+- [x] App skeleton, router with PRD §28 routes (stubs OK)
+- [x] API client (`services/api.ts`) with session handling
+- [x] Login page + auth guard, logout
+- [x] Mobile-first layout shell, large touch targets
+- [x] PWA: manifest, icons, standalone display, service worker with app-shell caching
 
 Deploy
-- [ ] Production serving on this host: built frontend + FastAPI behind one localhost origin (e.g. Caddy/nginx, or FastAPI serving `dist/`)
-- [ ] systemd/compose units for the app; retire `dogwalker-placeholder`; update `cloudflared/config.yml` if the port changes
+- [x] Production serving on this host: built frontend + FastAPI behind one localhost origin (e.g. Caddy/nginx, or FastAPI serving `dist/`)
+- [x] systemd/compose units for the app; retire `dogwalker-placeholder`; update `cloudflared/config.yml` if the port changes
 - [ ] **Done when:** the app installs to an iPhone Home Screen from `dogwalker.aidanlenahan.com` and you can log in
 
 ## Phase 2 — GPS feasibility spike (PRD §13, de-risk early)

@@ -1,0 +1,24 @@
+[Unit]
+Description=Dogwalker PWA (FastAPI API + built frontend)
+Wants=network-online.target
+After=network-online.target postgresql.service
+Requires=postgresql.service
+
+[Service]
+Type=simple
+WorkingDirectory=/root/dogwalker/backend
+# Settings come from /root/dogwalker/.env (read by the app itself).
+ExecStartPre=/root/dogwalker/backend/.venv/bin/alembic upgrade head
+# One worker: the login throttle is in-process. Only cloudflared (localhost) connects.
+ExecStart=/root/dogwalker/backend/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8080 --proxy-headers --forwarded-allow-ips 127.0.0.1 --no-server-header
+Restart=on-failure
+RestartSec=5s
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+# Phase 6: add ReadWritePaths= for photo storage.
+
+[Install]
+WantedBy=multi-user.target
