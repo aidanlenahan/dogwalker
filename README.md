@@ -6,7 +6,7 @@ Spec: [docs/PRD.md](docs/PRD.md). Build plan: [TODO.md](TODO.md).
 - `frontend/`: React + TypeScript + Vite PWA
 - `backend/`: FastAPI + SQLAlchemy + Alembic on PostgreSQL
 - `deploy/`: systemd units and the deploy script for the production host
-- `cloudflared/`: Cloudflare Tunnel config for `dogwalker.aidanlenahan.com`
+- `cloudflared/`: Cloudflare Tunnel config for `dogwalker.alenahan.net`
 
 ## Configuration
 

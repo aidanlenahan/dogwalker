@@ -1,5 +1,5 @@
 [Unit]
-Description=Placeholder origin for dogwalker.aidanlenahan.com (replace with the real app)
+Description=Placeholder origin for dogwalker.alenahan.net (replace with the real app)
 After=network.target
 
 [Service]

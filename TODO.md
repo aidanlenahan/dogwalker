@@ -14,7 +14,7 @@ This order differs from the PRD milestones in a few places:
 
 ## Phase 0 — Hosting (mostly done)
 
-- [x] Cloudflare Tunnel `dogwalker-pwa` → `dogwalker.aidanlenahan.com` (systemd: `cloudflared-dogwalker`)
+- [x] Cloudflare Tunnel `dogwalker-pwa` → `dogwalker.alenahan.net` (systemd: `cloudflared-dogwalker`)
 - [x] Placeholder origin on `127.0.0.1:5173` (systemd: `dogwalker-placeholder`)
 - [X] Confirm the placeholder page loads in a phone browser over HTTPS
 - [ ] Cloudflare: make sure share links (`/w/*`), `/u/*` and `/api/*` aren't blocked by the bot challenge for normal clients and link-preview fetchers (WAF skip rule or lower Security Level for this hostname)
@@ -48,7 +48,7 @@ Frontend (React + TypeScript + Vite)
 Deploy
 - [x] Production serving on this host: built frontend + FastAPI behind one localhost origin (e.g. Caddy/nginx, or FastAPI serving `dist/`)
 - [x] systemd/compose units for the app; retire `dogwalker-placeholder`; update `cloudflared/config.yml` if the port changes
-- [ ] **Done when:** the app installs to an iPhone Home Screen from `dogwalker.aidanlenahan.com` and you can log in
+- [ ] **Done when:** the app installs to an iPhone Home Screen from `dogwalker.alenahan.net` and you can log in
 
 ## Phase 2 — GPS feasibility spike (PRD §13, de-risk early)
 
