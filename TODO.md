@@ -48,13 +48,15 @@ Frontend (React + TypeScript + Vite)
 Deploy
 - [x] Production serving on this host: built frontend + FastAPI behind one localhost origin (e.g. Caddy/nginx, or FastAPI serving `dist/`)
 - [x] systemd/compose units for the app; retire `dogwalker-placeholder`; update `cloudflared/config.yml` if the port changes
-- [ ] **Done when:** the app installs to an iPhone Home Screen from `dogwalker.alenahan.net` and you can log in
+- [x] **Done when:** the app installs to an iPhone Home Screen from `dogwalker.alenahan.net` and you can log in
 
 ## Phase 2 — GPS feasibility spike (PRD §13, de-risk early)
 
-- [ ] Throwaway page using `watchPosition` that logs samples to IndexedDB and shows count/accuracy
-- [ ] Test on iPhone as an installed PWA: screen on, screen locked, app switch, network loss, reopen, GPS loss
-- [ ] Write down what works in `docs/gps-findings.md`. If background tracking isn't reliable, record the limitation and move on (PRD says don't block MVP)
+Decision already made (PRD §13.1): live GPS is foreground-only with a wake lock; GPX import is the reliable fallback; native is post-MVP (§37.1). This spike now just confirms the details on your phone: how fast iOS stops after locking, and whether the wake lock holds in a pocket.
+
+- [x] Throwaway page using `watchPosition` that logs samples to IndexedDB and shows count/accuracy (`/dev/gps`, linked from the dashboard; also logs lifecycle events, gaps, wake lock toggle, JSON/GPX export)
+- [ ] Test on iPhone as an installed PWA: screen on, screen locked, wake lock in pocket, app switch, network loss, reopen, GPS loss
+- [ ] Fill in `docs/gps-findings.md` (template with the test matrix is in place). Don't block on it: Phase 3 doesn't depend on the results
 
 ## Phase 3 — Dogs, walk lifecycle, events (Milestones 2 + 4)
 
@@ -86,10 +88,16 @@ Deploy
 - [ ] Buffer points locally (IndexedDB) and batch-upload to `/api/walks/{id}/points`
 - [ ] Accuracy filtering (reject or flag poor-accuracy points; ignore implausible jumps)
 - [ ] Distance from accepted sequential points (haversine), duration, average pace. Compute server-side on finish, live estimate client-side
+- [ ] Screen wake lock on Active Walk (re-acquire on return to foreground) + "keep the app open" hint; show GPS gaps honestly
 - [ ] Map component (Leaflet + OSM tiles behind a provider abstraction): current position, live polyline, fit-to-route
 - [ ] Route + stats on Active Walk, Review, and client report (unlisted)
 - [ ] Event lat/lng captured from latest position
-- [ ] **Done when:** a real outdoor walk produces a reasonable route and distance
+- [ ] `walks.route_source` column (`none | live | import`) + migration
+- [ ] **GPX import** (PRD §12.1): upload a `.gpx` on the Review page → `POST /api/walks/{id}/route/import`; parse server-side with `defusedxml`, size limit, keep only points inside the walk's start/end window, replace live points, recompute stats
+- [ ] Geotag location-less events by timestamp against the imported track
+- [ ] Short in-app help: how to export GPX from Garmin Connect, Strava, and Apple Watch (via HealthFit / WorkOutDoors)
+- [ ] Tests: GPX parsing (multiple segments, no timestamps, malformed/XXE input), window clipping, stats after import
+- [ ] **Done when:** a real outdoor walk produces a reasonable route and distance, recorded live **or** imported from a watch GPX
 
 ## Phase 6 — Photos (Milestone 5, §14)
 
@@ -137,4 +145,4 @@ Deploy
 
 ## Out of scope for MVP (PRD §4, §37)
 
-Payments, invoicing, booking/scheduling, calendar, owner accounts/messaging, multiple walkers/teams, native apps, live client tracking, push notifications, PDF reports, weather, AI summaries, advanced analytics, expiring links, privacy zones/home redaction. Revisit after Phase 8.
+Native iOS/Android shell for background GPS + direct HealthKit/Garmin sync (PRD §37.1: Capacitor/Expo, needs the $99/yr Apple Developer account). Payments, invoicing, booking/scheduling, calendar, owner accounts/messaging, multiple walkers/teams, live client tracking, push notifications, PDF reports, weather, AI summaries, advanced analytics, expiring links, privacy zones/home redaction. Revisit after Phase 8.

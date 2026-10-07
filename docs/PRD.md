@@ -19,6 +19,12 @@
 \---
 
 
+NOTES:
+
+- have two options for user: keep app open during GPS record or record GPS and then upload later (include directions on how to do that in articles page)
+
+
+
 
 \## 1. Product Summary
 
@@ -798,6 +804,38 @@ The route should be displayed on a map.
 
 
 
+\## 12.1 Route Sources
+
+
+
+A walk's route can come from one of two sources. Both store points in `gps\_points` and use the same filtering, distance, and map code.
+
+
+
+1\. \*\*Live recording (default):\*\* `watchPosition` while the Active Walk screen is open in the foreground. The Screen Wake Lock API is used to keep the screen on so the browser keeps delivering positions.
+
+
+
+2\. \*\*GPX import (fallback):\*\* the walker records the walk on another device or app (Apple Watch, Garmin, Strava, etc.), exports a `.gpx` file, and uploads it to the walk from the Review screen. Points outside the walk's start/end window are discarded. Imported points replace any live points for that walk.
+
+
+
+Typical export paths: Garmin Connect (activity → Export to GPX), Strava (activity → Export GPX), Apple Watch workouts via a third-party iPhone app such as HealthFit or WorkOutDoors.
+
+
+
+Events logged without a location (e.g. while live GPS was off) may be geotagged after import by matching their timestamps to the imported track.
+
+
+
+Each walk records its route source: `none | live | import`.
+
+
+
+GPX is the only import format for MVP. FIT/TCX can be added later if needed.
+
+
+
 \---
 
 
@@ -841,6 +879,38 @@ If reliable background tracking cannot be achieved through the PWA, this limitat
 
 
 The backend API must remain client-independent so a future native application can reuse it.
+
+
+
+\## 13.1 Decision (October 2026)
+
+
+
+iOS suspends a Home Screen PWA's JavaScript, including `watchPosition`, shortly after the screen locks or the walker switches apps. A PWA cannot run background location, and it cannot read Apple Health/HealthKit data.
+
+
+
+Therefore:
+
+
+
+\- Live recording is foreground-only. The Active Walk screen holds a screen wake lock, tells the walker to keep the app open, and shows gaps honestly (no invented points across a gap).
+
+
+
+\- GPX import (§12.1) is the reliable path for walkers who want a complete route with the phone in a pocket.
+
+
+
+\- The Background Sync API is not available on iOS Safari, so syncing uses the app's own IndexedDB queue with retry on reconnect/foreground (§26).
+
+
+
+\- No Apple developer account, Mac, or App Store release is needed for MVP.
+
+
+
+Results of the on-device check are recorded in `docs/gps-findings.md`. A native client is the long-term fix (§37.1).
 
 
 
@@ -1964,6 +2034,8 @@ ended\_at
 
 distance\_meters
 
+route\_source
+
 notes
 
 share\_token
@@ -2653,6 +2725,38 @@ After the MVP has been validated:
 
 
 These should not delay MVP release.
+
+
+
+\## 37.1 Native Client Option
+
+
+
+If foreground recording plus GPX import is not good enough in practice, the next step is a native shell around the existing React frontend, using the same backend API.
+
+
+
+\- \*\*Framework:\*\* Capacitor (reuses the React/TypeScript code) or React Native/Expo.
+
+
+
+\- \*\*Unlocks:\*\* background location with the screen off, and reading Apple Watch workout routes directly from HealthKit (no manual GPX export).
+
+
+
+\- \*\*Building without a Mac:\*\* cloud macOS builders (Expo EAS, GitHub Actions macOS runners).
+
+
+
+\- \*\*Cost:\*\* installing a custom build on an iPhone requires signing with a paid Apple Developer account ($99/year). Free provisioning needs Xcode on a Mac. Expo Go is free, but it can't run HealthKit or custom background-location code.
+
+
+
+\- \*\*Garmin:\*\* direct sync goes through the Garmin Connect Developer Program (approval required; check current availability) or a paid aggregator (e.g. Terra). GPX import already covers Garmin for MVP.
+
+
+
+Nothing in the MVP should block this. Keep business logic on the server and keep the API client-independent.
 
 
 
