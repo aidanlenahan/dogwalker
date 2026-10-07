@@ -17,33 +17,40 @@ Test tool: the throwaway page at `/dev/gps` (link "GPS test (dev)" on the dashbo
 
 ## Setup
 
-- Device / iOS version:
-- Installed to Home Screen: yes / no (`start` event logs `standalone=`)
-- Location permission: While Using / Ask Next Time / Precise on?
-- Date:
+- Device / iOS version: iPhone, iOS 18.7 (Safari 27.0.1 engine)
+- Installed to Home Screen: yes (`standalone=true`)
+- Location permission: not recorded
+- Date: 2026-10-07
 
 ## Results
 
 Run each case with "Keep screen awake" **off** unless the case says otherwise. For each one, record fixes before/during/after, the gap length, and whether recording continued without touching anything.
 
+Cases marked *Phase 8* weren't run in the spike; they're covered by real-walk testing (TODO Phase 8).
+
 | # | Case | How | Result | Notes |
 |---|------|-----|--------|-------|
-| 1 | Screen on, app foreground | Walk ~5 min holding the phone | | baseline fix rate and accuracy |
-| 2 | Screen locked | Lock for 2 min, unlock | | `fixes while hidden` > 0? |
-| 3 | App switch | Open another app 2 min, come back | | |
-| 4 | Wake lock on | Toggle on, put phone in pocket screen-on | | does it hold? battery? |
-| 5 | Network loss | Airplane mode (keep Location on) ~2 min | | fixes still arrive? `(offline)` tags |
-| 6 | Reopen / restart | Swipe the app away, reopen, go to GPS test | | `resumed` event, gap length |
-| 7 | GPS loss | Indoors / underground | | errors? accuracy jump? |
-| 8 | Accidental refresh | Pull-to-refresh or reload | | |
-| 9 | Long walk | 30–60 min, normal use | | gaps, battery used |
-| 10 | Paused alert | Notifications on (Settings). Start, lock the phone, wait | Works | ~18 s after locking (after the hidden-heartbeat fix) | push within ~15 s? tapping it reopens `/dev/gps`? cleared on return? |
-| 11 | Paused alert, offline | Airplane mode, then lock | | no alert while offline; nothing stale after reconnecting (2 min TTL) |
+| 1 | Screen on, app foreground | Walk ~5 min holding the phone | Partial | Standing still only: accuracy 7–15 m (median 7–12 m), `speed` always null. Fixes come in bursts, then every ~6–15 s when not moving. Walking baseline → *Phase 8* |
+| 2 | Screen locked | Lock for 2 min, unlock | Stops, as expected | Run 2: locked 24 s, 0 fixes while hidden; fixes resumed on unlock without touching anything |
+| 3 | App switch | Open another app 2 min, come back | Stops, as expected | Run 1: switches of 19 s and 38 s, 0 fixes while hidden; resumed on return |
+| 4 | Wake lock on | Toggle on, put phone in pocket screen-on | Holds (screen on, in hand) | Run 1: held 3.5 min, 30 fixes, no hidden periods. Pocket + battery → *Phase 8* |
+| 5 | Network loss | Airplane mode (keep Location on) ~2 min | *Phase 8* | |
+| 6 | Reopen / restart | Swipe the app away, reopen, go to GPS test | *Phase 8* | |
+| 7 | GPS loss | Indoors / underground | *Phase 8* | No errors in either run |
+| 8 | Accidental refresh | Pull-to-refresh or reload | *Phase 8* | |
+| 9 | Long walk | 30–60 min, normal use | *Phase 8* | |
+| 10 | Paused alert | Notifications on (Settings). Start, lock the phone, wait | Works | ~18 s after locking (after the hidden-heartbeat fix) |
+| 11 | Paused alert, offline | Airplane mode, then lock | *Phase 8* | Expect no alert while offline; nothing stale after reconnecting (2 min TTL) |
 
 ## Conclusion
 
-- Background tracking reliable? 
-- Does wake lock keep recording going with the phone in a pocket (screen on)? Battery cost per 30 min:
-- Paused alert delay and reliability (cases 10–11):
-- Live-recording UX for Phase 5 (warning wording, gap display):
-- Impact on Phase 5 design:
+- **Background tracking reliable?** No, as PRD §13.1 assumed: 0 fixes while hidden in every case. Recording picks back up by itself when the app returns to the foreground.
+- **Wake lock:** keeps recording going with the screen on (3.5 min, no gaps). Pocket behavior and battery cost per 30 min still to measure on a real walk.
+- **Paused alert:** arrives ~18 s after locking (15 s grace + up to 5 s check interval). iOS keeps a hidden page running 1–3 s, so heartbeats must stop while hidden (fixed). Offline behavior untested.
+- **Live-recording UX for Phase 5:**
+  - Wake lock on by default on Active Walk, with a visible "keep the app open" note.
+  - If notifications are off, offer them on Active Walk too (the paused alert is the safety net).
+  - Show gaps from hidden periods as breaks in the route; don't draw a line across them.
+- **Impact on Phase 5 design:** no change to the plan. Two details:
+  - iOS sends fixes only every ~6–15 s while standing still, so a long time between fixes isn't a gap by itself. Detect gaps from hidden periods (visibility events), not from fix spacing alone.
+  - `speed` can be null; compute pace from distance/time, not from `coords.speed`.

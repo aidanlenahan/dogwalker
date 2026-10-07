@@ -59,8 +59,8 @@ Decision already made (PRD §13.1): live GPS is foreground-only with a wake lock
 - [x] Notification permission UX: first-sign-in sheet, banner on each launch while off (X to dismiss, Settings button), `/settings` page with on/off + test notification
 - [x] GPS-paused alert (PRD §13.2): heartbeat every 5 s + hidden beacon (`services/liveTracking.ts`) → server watchdog (`app/tracking.py`) pushes "GPS recording paused"; wired into `/dev/gps`
 - [x] Deploy (`deploy/deploy.sh`), reinstall/reopen the Home Screen app, turn on notifications in Settings, send a test notification
-- [ ] Test on iPhone as an installed PWA: screen on, screen locked, wake lock in pocket, app switch, network loss, reopen, GPS loss, **paused alert arrives after locking**
-- [ ] Fill in `docs/gps-findings.md` (template with the test matrix is in place). Don't block on it: Phase 3 doesn't depend on the results
+- [x] Test on iPhone as an installed PWA: screen locked, app switch, wake lock (screen on), **paused alert arrives after locking** (~18 s). Remaining cases moved to Phase 8
+- [x] Fill in `docs/gps-findings.md`: background tracking confirmed impossible, wake lock holds, paused alert works; Phase 5 notes on gap detection and null `speed`
 
 ## Phase 3 — Dogs, walk lifecycle, events (Milestones 2 + 4)
 
@@ -94,7 +94,8 @@ Decision already made (PRD §13.1): live GPS is foreground-only with a wake lock
 - [ ] Reuse `LiveTrackingReporter` on Active Walk (session = walk id, resume URL `/walk/:id/live`); `stop()` on Finish
 - [ ] Accuracy filtering (reject or flag poor-accuracy points; ignore implausible jumps)
 - [ ] Distance from accepted sequential points (haversine), duration, average pace. Compute server-side on finish, live estimate client-side
-- [ ] Screen wake lock on Active Walk (re-acquire on return to foreground) + "keep the app open" hint; show GPS gaps honestly
+- [ ] Screen wake lock on Active Walk, on by default (re-acquire on return to foreground) + "keep the app open" hint; offer notifications if off
+- [ ] Show GPS gaps honestly: detect them from hidden periods, not fix spacing (iOS sends fixes only every ~6–15 s when standing still; see `docs/gps-findings.md`). Pace from distance/time (`coords.speed` is often null)
 - [ ] Map component (Leaflet + OSM tiles behind a provider abstraction): current position, live polyline, fit-to-route
 - [ ] Route + stats on Active Walk, Review, and client report (unlisted)
 - [ ] Event lat/lng captured from latest position
@@ -128,6 +129,7 @@ Decision already made (PRD §13.1): live GPS is foreground-only with a wake lock
 
 - [ ] Several real walks on iPhone Home Screen PWA
 - [ ] Test: screen on/locked, app switching, cellular loss, GPS drift, long walks, accidental refresh, PWA restart, photo uploads, sharing
+- [ ] GPS cases left from the spike (`docs/gps-findings.md`): walking baseline, wake lock in a pocket + battery per 30 min, GPS paused alert while offline
 - [ ] Record limitations and bugs in `docs/field-testing.md`; fix blockers
 - [ ] Security pass against the PRD §25 checklist (HTTPS, no sequential public IDs, input validation, upload limits, DB not exposed, no secrets in git)
 - [ ] Backups for PostgreSQL + photo storage
