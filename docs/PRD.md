@@ -1781,6 +1781,8 @@ Major routes:
 
 /dogs/:id
 
+/walks
+
 
 
 /walk/new

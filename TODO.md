@@ -64,16 +64,17 @@ Decision already made (PRD §13.1): live GPS is foreground-only with a wake lock
 
 ## Phase 3 — Dogs, walk lifecycle, events (Milestones 2 + 4)
 
-- [ ] Dogs CRUD API + pages (`/dogs`, `/dogs/:id`): name, owner name, notes (photo later)
-- [ ] Walk API: create, start, finish (`/api/walks/{id}/finish` sets `ended_at`, computes stats, status → `completed`)
-- [ ] New Walk page: pick or create a dog, tracking toggles, pre-walk note
-- [ ] GPS mode choice on New Walk (PRD §12.1): "Record live (keep the app open)" vs "Record on another device, upload GPX later"; store on the walk
-- [ ] Active Walk page: dog name, elapsed timer, Finish button
-- [ ] Events API (`/api/walks/{id}/events`): `pee | poop | water | fed | note | other`, timestamp, optional note/lat/lng; edit and delete while not published
-- [ ] Quick-log buttons (Pee/Poop/Water/Fed/Note) + recent-activity list on Active Walk
-- [ ] **Local-first active walk:** persist active walk + unsent events in IndexedDB; queue and retry API writes; survive refresh/PWA restart
-- [ ] Dashboard: New Walk button, prominent active walk with Resume, recent walks
-- [ ] Walk history list + walk detail (`/walk/:id`)
+- [x] Dogs CRUD API + pages (`/dogs`, `/dogs/:id`): name, owner name, notes (photo later)
+- [x] Walk API: create, start, finish (`/api/walks/{id}/finish` sets `ended_at`, computes stats, status → `completed`)
+- [x] New Walk page: pick or create a dog, tracking toggles, pre-walk note
+- [x] GPS mode choice on New Walk (PRD §12.1): "Record live (keep the app open)" vs "Record on another device, upload GPX later"; store on the walk
+- [x] Active Walk page: dog name, elapsed timer, Finish button
+- [x] Events API (`/api/walks/{id}/events`): `pee | poop | water | fed | note | other`, timestamp, optional note/lat/lng; edit and delete while not published
+- [x] Quick-log buttons (Pee/Poop/Water/Fed/Note) + recent-activity list on Active Walk
+- [x] **Local-first active walk:** persist active walk + unsent events in IndexedDB; queue and retry API writes; survive refresh/PWA restart
+- [x] Dashboard: New Walk button, prominent active walk with Resume, recent walks
+- [x] Walk history list (`/walks`) + walk detail (`/walk/:id`)
+- [ ] Deploy and try a real walk on the iPhone (start, log, refresh/close the app mid-walk, finish)
 - [ ] **Done when:** a walk goes `created → active → completed` with events, without GPS, and survives a refresh mid-walk
 
 ## Phase 4 — Review, publish, share (Milestone 6, core value)
@@ -145,7 +146,7 @@ Decision already made (PRD §13.1): live GPS is foreground-only with a wake lock
 
 ## Phase 10 — Polish
 
-- [ ] Remember last-used tracking options on New Walk
+- [x] Remember last-used tracking options on New Walk (done in Phase 3)
 - [ ] Time-of-day greeting, dog shortcuts on dashboard
 - [ ] Report visual polish pass (typography, stat tiles, map styling)
 - [ ] Accessibility pass (contrast, tap targets, screen reader labels)
