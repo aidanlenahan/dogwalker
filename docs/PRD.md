@@ -19,13 +19,6 @@
 \---
 
 
-NOTES:
-
-- have two options for user: keep app open during GPS record or record GPS and then upload later (include directions on how to do that in articles page)
-
-
-
-
 \## 1. Product Summary
 
 
@@ -156,7 +149,7 @@ The following are explicitly outside the MVP:
 
 \- Weather integration
 
-\- Push notifications
+\- Push notifications, except the walker's own GPS-paused alert (§13.2)
 
 \- Calendar integration
 
@@ -510,6 +503,10 @@ Track
 
 \[x] GPS Route
 
+&#x20;   (•) Record live (keep the app open)
+
+&#x20;   ( ) Record on another device, upload GPX later
+
 \[x] Walk Statistics
 
 \[x] Photos
@@ -828,6 +825,38 @@ Events logged without a location (e.g. while live GPS was off) may be geotagged 
 
 
 
+The walker chooses the mode on the New Walk screen when GPS Route is enabled:
+
+
+
+\- \*\*Record live (keep the app open):\*\* the Active Walk screen starts `watchPosition` and the wake lock, and warns that locking the phone or switching apps will pause the route.
+
+\- \*\*Record on another device, upload GPX later:\*\* no live GPS is requested during the walk. The Review screen shows the GPX upload prominently and links to the matching help article.
+
+
+
+The choice only sets defaults: a live-recorded walk can still have a GPX uploaded afterwards (replacing its live points), and the last-used mode is remembered (§9).
+
+
+
+Step-by-step directions for each export path live on public help articles (`/help`), not only in an inline tooltip, so they can include screenshots and be linked from the Review screen and the New Walk screen. MVP articles:
+
+
+
+\- Recording a walk with the app open (wake lock, what pauses recording)
+
+\- Exporting a GPX from Garmin Connect
+
+\- Exporting a GPX from Strava
+
+\- Exporting an Apple Watch workout as GPX (HealthFit / WorkOutDoors)
+
+
+
+Articles are static content shipped with the frontend (Markdown rendered at build time); no CMS for MVP.
+
+
+
 Each walk records its route source: `none | live | import`.
 
 
@@ -911,6 +940,52 @@ Therefore:
 
 
 Results of the on-device check are recorded in `docs/gps-findings.md`. A native client is the long-term fix (§37.1).
+
+
+
+\## 13.2 Saving and the GPS-paused alert
+
+
+
+Every position is written to IndexedDB the moment it arrives, so a suspended or killed app loses nothing it already received. Points are batch-uploaded every few seconds while online (§26).
+
+
+
+Because a suspended PWA cannot warn the walker itself, the server does it with Web Push (iOS 16.4+, Home Screen apps only):
+
+
+
+1\. While live recording, the client sends a heartbeat every 5 seconds.
+
+2\. When the page is hidden (screen locked, app switched, app closed) it sends a beacon.
+
+3\. If a beacon arrived and no heartbeat followed within 15 seconds, or no heartbeat arrived for 60 seconds, the server pushes "GPS recording paused" to the walker's devices. Tapping it reopens the Active Walk. It is sent once per lapse and held by the push service for at most 2 minutes.
+
+4\. Returning to the app resumes heartbeats and clears the notification. Finishing the walk closes the session so no alert is sent.
+
+
+
+Watchdog state is in memory (single backend process); a restart only drops sessions until their next heartbeat.
+
+
+
+\## 13.3 Notification permission
+
+
+
+iOS only shows the permission prompt in response to a tap, so the app asks in its own UI first:
+
+
+
+\- First sign-in on a device: a sheet ("Turn on notifications?") with Turn on / Not now.
+
+\- Every later app launch while push is off: a small banner with a Settings button and an X to dismiss it until the next launch.
+
+\- Settings (`/settings`): turn notifications on or off, send a test notification, and instructions when they are blocked or the app is still in a Safari tab (Add to Home Screen first).
+
+
+
+Subscriptions are per device (`push\_subscriptions`) and removed when the push service reports them gone.
 
 
 
@@ -1767,6 +1842,8 @@ src/
 │   ├── ReviewWalk/
 
 │   ├── SharedWalk/
+
+│   ├── Help/
 
 │   └── Profile/
 
@@ -2694,7 +2771,7 @@ After the MVP has been validated:
 
 \- Automatic home-location redaction
 
-\- Push notifications
+\- Push notifications beyond the GPS-paused alert (e.g. owner notifications)
 
 \- Live walk tracking
 

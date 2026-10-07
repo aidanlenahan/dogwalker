@@ -28,10 +28,13 @@ Run each case with "Keep screen awake" **off** unless the case says otherwise. F
 | 7 | GPS loss | Indoors / underground | | errors? accuracy jump? |
 | 8 | Accidental refresh | Pull-to-refresh or reload | | |
 | 9 | Long walk | 30–60 min, normal use | | gaps, battery used |
+| 10 | Paused alert | Notifications on (Settings). Start, lock the phone, wait | | push within ~15 s? tapping it reopens `/dev/gps`? cleared on return? |
+| 11 | Paused alert, offline | Airplane mode, then lock | | no alert while offline; nothing stale after reconnecting (2 min TTL) |
 
 ## Conclusion
 
 - Background tracking reliable? 
 - Does wake lock keep recording going with the phone in a pocket (screen on)? Battery cost per 30 min:
+- Paused alert delay and reliability (cases 10–11):
 - Live-recording UX for Phase 5 (warning wording, gap display):
 - Impact on Phase 5 design:

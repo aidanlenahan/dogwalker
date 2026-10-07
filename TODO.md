@@ -50,12 +50,16 @@ Deploy
 - [x] systemd/compose units for the app; retire `dogwalker-placeholder`; update `cloudflared/config.yml` if the port changes
 - [x] **Done when:** the app installs to an iPhone Home Screen from `dogwalker.alenahan.net` and you can log in
 
-## Phase 2 — GPS feasibility spike (PRD §13, de-risk early)
+## Phase 2 — GPS feasibility spike + notifications (PRD §13, de-risk early)
 
 Decision already made (PRD §13.1): live GPS is foreground-only with a wake lock; GPX import is the reliable fallback; native is post-MVP (§37.1). This spike now just confirms the details on your phone: how fast iOS stops after locking, and whether the wake lock holds in a pocket.
 
 - [x] Throwaway page using `watchPosition` that logs samples to IndexedDB and shows count/accuracy (`/dev/gps`, linked from the dashboard; also logs lifecycle events, gaps, wake lock toggle, JSON/GPX export)
-- [ ] Test on iPhone as an installed PWA: screen on, screen locked, wake lock in pocket, app switch, network loss, reopen, GPS loss
+- [x] Web Push (PRD §13.3): `push_subscriptions` table, VAPID keys (`python -m app.cli generate-vapid-keys`), `/api/push/*`, custom service worker (`src/sw/sw.ts`) with push + notification click
+- [x] Notification permission UX: first-sign-in sheet, banner on each launch while off (X to dismiss, Settings button), `/settings` page with on/off + test notification
+- [x] GPS-paused alert (PRD §13.2): heartbeat every 5 s + hidden beacon (`services/liveTracking.ts`) → server watchdog (`app/tracking.py`) pushes "GPS recording paused"; wired into `/dev/gps`
+- [ ] Deploy (`deploy/deploy.sh`), reinstall/reopen the Home Screen app, turn on notifications in Settings, send a test notification
+- [ ] Test on iPhone as an installed PWA: screen on, screen locked, wake lock in pocket, app switch, network loss, reopen, GPS loss, **paused alert arrives after locking**
 - [ ] Fill in `docs/gps-findings.md` (template with the test matrix is in place). Don't block on it: Phase 3 doesn't depend on the results
 
 ## Phase 3 — Dogs, walk lifecycle, events (Milestones 2 + 4)
@@ -63,6 +67,7 @@ Decision already made (PRD §13.1): live GPS is foreground-only with a wake lock
 - [ ] Dogs CRUD API + pages (`/dogs`, `/dogs/:id`): name, owner name, notes (photo later)
 - [ ] Walk API: create, start, finish (`/api/walks/{id}/finish` sets `ended_at`, computes stats, status → `completed`)
 - [ ] New Walk page: pick or create a dog, tracking toggles, pre-walk note
+- [ ] GPS mode choice on New Walk (PRD §12.1): "Record live (keep the app open)" vs "Record on another device, upload GPX later"; store on the walk
 - [ ] Active Walk page: dog name, elapsed timer, Finish button
 - [ ] Events API (`/api/walks/{id}/events`): `pee | poop | water | fed | note | other`, timestamp, optional note/lat/lng; edit and delete while not published
 - [ ] Quick-log buttons (Pee/Poop/Water/Fed/Note) + recent-activity list on Active Walk
@@ -85,7 +90,8 @@ Decision already made (PRD §13.1): live GPS is foreground-only with a wake lock
 ## Phase 5 — GPS tracking & maps (Milestone 3, §12, §32)
 
 - [ ] `services/geolocation.ts`: continuous `watchPosition` during active walk, GPS status indicator
-- [ ] Buffer points locally (IndexedDB) and batch-upload to `/api/walks/{id}/points`
+- [ ] Save every fix to IndexedDB as it arrives; batch-upload to `/api/walks/{id}/points` every ~5 s while online
+- [ ] Reuse `LiveTrackingReporter` on Active Walk (session = walk id, resume URL `/walk/:id/live`); `stop()` on Finish
 - [ ] Accuracy filtering (reject or flag poor-accuracy points; ignore implausible jumps)
 - [ ] Distance from accepted sequential points (haversine), duration, average pace. Compute server-side on finish, live estimate client-side
 - [ ] Screen wake lock on Active Walk (re-acquire on return to foreground) + "keep the app open" hint; show GPS gaps honestly
@@ -95,7 +101,8 @@ Decision already made (PRD §13.1): live GPS is foreground-only with a wake lock
 - [ ] `walks.route_source` column (`none | live | import`) + migration
 - [ ] **GPX import** (PRD §12.1): upload a `.gpx` on the Review page → `POST /api/walks/{id}/route/import`; parse server-side with `defusedxml`, size limit, keep only points inside the walk's start/end window, replace live points, recompute stats
 - [ ] Geotag location-less events by timestamp against the imported track
-- [ ] Short in-app help: how to export GPX from Garmin Connect, Strava, and Apple Watch (via HealthFit / WorkOutDoors)
+- [ ] Help articles at `/help` (static Markdown, PRD §12.1): recording live with the app open; exporting GPX from Garmin Connect, Strava, and Apple Watch (via HealthFit / WorkOutDoors). Link them from New Walk and the Review page's GPX upload
+- [ ] "Upload later" walks: skip live GPS on Active Walk, show GPX upload prominently on Review
 - [ ] Tests: GPX parsing (multiple segments, no timestamps, malformed/XXE input), window clipping, stats after import
 - [ ] **Done when:** a real outdoor walk produces a reasonable route and distance, recorded live **or** imported from a watch GPX
 
@@ -145,4 +152,4 @@ Decision already made (PRD §13.1): live GPS is foreground-only with a wake lock
 
 ## Out of scope for MVP (PRD §4, §37)
 
-Native iOS/Android shell for background GPS + direct HealthKit/Garmin sync (PRD §37.1: Capacitor/Expo, needs the $99/yr Apple Developer account). Payments, invoicing, booking/scheduling, calendar, owner accounts/messaging, multiple walkers/teams, live client tracking, push notifications, PDF reports, weather, AI summaries, advanced analytics, expiring links, privacy zones/home redaction. Revisit after Phase 8.
+Native iOS/Android shell for background GPS + direct HealthKit/Garmin sync (PRD §37.1: Capacitor/Expo, needs the $99/yr Apple Developer account). Payments, invoicing, booking/scheduling, calendar, owner accounts/messaging, multiple walkers/teams, live client tracking, push notifications beyond the GPS-paused alert, PDF reports, weather, AI summaries, advanced analytics, expiring links, privacy zones/home redaction. Revisit after Phase 8.
