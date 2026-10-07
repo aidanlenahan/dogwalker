@@ -58,7 +58,7 @@ Decision already made (PRD §13.1): live GPS is foreground-only with a wake lock
 - [x] Web Push (PRD §13.3): `push_subscriptions` table, VAPID keys (`python -m app.cli generate-vapid-keys`), `/api/push/*`, custom service worker (`src/sw/sw.ts`) with push + notification click
 - [x] Notification permission UX: first-sign-in sheet, banner on each launch while off (X to dismiss, Settings button), `/settings` page with on/off + test notification
 - [x] GPS-paused alert (PRD §13.2): heartbeat every 5 s + hidden beacon (`services/liveTracking.ts`) → server watchdog (`app/tracking.py`) pushes "GPS recording paused"; wired into `/dev/gps`
-- [ ] Deploy (`deploy/deploy.sh`), reinstall/reopen the Home Screen app, turn on notifications in Settings, send a test notification
+- [x] Deploy (`deploy/deploy.sh`), reinstall/reopen the Home Screen app, turn on notifications in Settings, send a test notification
 - [ ] Test on iPhone as an installed PWA: screen on, screen locked, wake lock in pocket, app switch, network loss, reopen, GPS loss, **paused alert arrives after locking**
 - [ ] Fill in `docs/gps-findings.md` (template with the test matrix is in place). Don't block on it: Phase 3 doesn't depend on the results
 
