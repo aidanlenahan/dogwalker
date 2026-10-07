@@ -92,6 +92,16 @@ a {
   gap: 12px;
 }
 
+.stack-xs {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.prewrap {
+  white-space: pre-wrap;
+}
+
 .stack-lg {
   display: flex;
   flex-direction: column;
@@ -208,6 +218,10 @@ a {
   height: 26px;
 }
 
+.btn-danger {
+  color: var(--danger);
+}
+
 /* ---------- Forms ---------- */
 
 .field {
@@ -218,7 +232,8 @@ a {
   font-size: 0.95rem;
 }
 
-.field input {
+.field input,
+.field textarea {
   min-height: var(--tap);
   padding: 0 14px;
   border: 1px solid var(--border);
@@ -231,7 +246,19 @@ a {
   font-weight: 400;
 }
 
-.field input:focus {
+.field textarea {
+  padding: 10px 14px;
+  resize: vertical;
+  line-height: 1.4;
+}
+
+.field-hint {
+  font-weight: 400;
+  font-size: 0.85rem;
+}
+
+.field input:focus,
+.field textarea:focus {
   border-color: var(--focus);
   outline: none;
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 30%, transparent);
@@ -360,6 +387,236 @@ a {
 .icon-btn svg {
   width: 22px;
   height: 22px;
+}
+
+/* ---------- Lists, choices, stats ---------- */
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.list > li + li {
+  border-top: 1px solid var(--border);
+}
+
+.list-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 10px 16px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.list > li.list-row + li.list-row,
+.list > li + li > .list-row {
+  border-top: 0;
+}
+
+.list-title {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  font-weight: 600;
+}
+
+.walk-card .stack-xs {
+  flex: 1 1 auto;
+}
+
+.event-time {
+  flex: none;
+  min-width: 4.8em;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.92rem;
+}
+
+.event-note {
+  font-weight: 400;
+  color: var(--muted);
+  white-space: pre-wrap;
+}
+
+.row-action {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted);
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.just-logged {
+  animation: logged 1.5s ease-out;
+}
+
+@keyframes logged {
+  from {
+    background: color-mix(in srgb, var(--primary) 18%, transparent);
+  }
+}
+
+.badge {
+  flex: none;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.choice-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.choice {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 12px;
+  align-items: center;
+  min-height: 56px;
+  padding: 10px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.choice:has(input:checked) {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1px var(--primary);
+}
+
+.choice input {
+  width: 22px;
+  height: 22px;
+  grid-row: span 2;
+  accent-color: var(--primary);
+}
+
+.choice-title {
+  font-weight: 600;
+}
+
+.choice .muted {
+  grid-column: 2;
+  font-size: 0.88rem;
+}
+
+.choice-sm {
+  min-height: 48px;
+  background: var(--bg);
+}
+
+.sub-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-left: 34px;
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: var(--tap);
+  font-weight: 600;
+}
+
+.toggle input {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--primary);
+}
+
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 0;
+}
+
+.stat {
+  padding: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.stat dt {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.stat dd {
+  margin: 2px 0 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.sync-status {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.sync-status-error {
+  color: var(--danger);
+}
+
+/* ---------- Walks ---------- */
+
+.active-card {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1px var(--primary);
+}
+
+.active-card-dog {
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.active-walk-head {
+  text-align: center;
+  gap: 4px;
+}
+
+.elapsed {
+  font-size: 3.2rem;
+  font-weight: 700;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.quick-log {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.quick-log .btn {
+  min-height: 64px;
+  font-size: 1.1rem;
+}
+
+.finish-btn {
+  margin-top: 8px;
 }
 
 /* ---------- Notification nudge ---------- */
