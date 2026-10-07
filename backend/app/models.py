@@ -28,6 +28,8 @@ from app.db import Base
 WALK_STATUSES = ("created", "active", "completed", "published")
 WALK_VISIBILITIES = ("private", "unlisted", "public")
 EVENT_TYPES = ("pee", "poop", "water", "fed", "note", "other")
+# PRD §12.1: record live with the app open, or record elsewhere and upload a GPX.
+GPS_MODES = ("live", "upload")
 
 
 def _in(column: str, values: tuple[str, ...]) -> str:
@@ -98,6 +100,7 @@ class Walk(Base):
     __table_args__ = (
         CheckConstraint(_in("status", WALK_STATUSES), name="status"),
         CheckConstraint(_in("visibility", WALK_VISIBILITIES), name="visibility"),
+        CheckConstraint(_in("gps_mode", GPS_MODES), name="gps_mode"),
         Index("ix_walks_user_id_started_at", "user_id", "started_at"),
     )
 
@@ -112,6 +115,8 @@ class Walk(Base):
     track_stats: Mapped[bool] = mapped_column(Boolean, server_default="true")
     track_photos: Mapped[bool] = mapped_column(Boolean, server_default="true")
     track_activity: Mapped[bool] = mapped_column(Boolean, server_default="true")
+    # Null when GPS isn't tracked.
+    gps_mode: Mapped[str | None] = mapped_column(String(16))
 
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     ended_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
@@ -123,6 +128,11 @@ class Walk(Base):
     share_token: Mapped[str | None] = mapped_column(String(64), unique=True)
     published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = _created_at()
+
+    dog: Mapped[Dog] = relationship(lazy="joined")
+    events: Mapped[list["WalkEvent"]] = relationship(
+        order_by="WalkEvent.timestamp", cascade="all, delete-orphan", passive_deletes=True
+    )
 
 
 class WalkEvent(Base):

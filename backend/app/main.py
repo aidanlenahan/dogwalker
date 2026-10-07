@@ -9,7 +9,7 @@ from fastapi import FastAPI, Request, Response
 from fastapi.responses import JSONResponse
 
 from app.config import get_settings
-from app.routers import auth, health, push, tracking
+from app.routers import auth, dogs, health, push, tracking, walks
 from app.spa import mount_spa
 from app.tracking import watchdog
 
@@ -75,6 +75,8 @@ def create_app() -> FastAPI:
 
     app.include_router(health.router)
     app.include_router(auth.router)
+    app.include_router(dogs.router)
+    app.include_router(walks.router)
     app.include_router(push.router)
     app.include_router(tracking.router)
 
