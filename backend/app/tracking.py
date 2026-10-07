@@ -41,19 +41,23 @@ class LiveTracker:
         self._sessions: dict[tuple[int, str], TrackedSession] = {}
         self._lock = threading.Lock()
 
-    def heartbeat(self, user_id: int, session_id: str, resume_url: str, now: float) -> None:
+    def heartbeat(
+        self, user_id: int, session_id: str, resume_url: str, now: float, visible: bool = True
+    ) -> None:
         with self._lock:
             key = (user_id, session_id)
             s = self._sessions.get(key)
             if s is None:
                 self._sessions[key] = TrackedSession(user_id, session_id, resume_url, now)
                 return
-            # Still running (possibly hidden on Android, where JS keeps going), so
-            # any earlier hidden beacon or alert no longer applies.
             s.last_seen = now
             s.resume_url = resume_url
-            s.hidden_at = None
-            s.alerted = False
+            # iOS runs a hidden page for a few more seconds before freezing it, so a
+            # hidden heartbeat doesn't mean recording continues. Only a visible one
+            # cancels the pending alert.
+            if visible:
+                s.hidden_at = None
+                s.alerted = False
 
     def hidden(self, user_id: int, session_id: str, now: float) -> None:
         with self._lock:
@@ -112,7 +116,7 @@ def check_once(settings: Settings, now: float | None = None) -> int:
         for s in due:
             # Short TTL: if the phone was offline, a late "paused" alert is just noise.
             sent = send_to_user(db, s.user_id, paused_payload(s), settings, ttl=120)
-            log.info("GPS paused alert for user %s: %s device(s)", s.user_id, sent)
+            log.info("GPS paused alert for user %s sent to %s device(s)", s.user_id, sent)
     return len(due)
 
 

@@ -29,13 +29,21 @@ def test_missing_heartbeats_alert_without_beacon() -> None:
     assert len(t.due(now=45, hidden_grace=GRACE, stale=STALE)) == 1
 
 
-def test_heartbeat_after_hidden_means_still_running() -> None:
-    # Android keeps JS running in the background: heartbeats continue, no alert.
+def test_visible_heartbeat_after_hidden_cancels_alert() -> None:
     t = LiveTracker()
     t.heartbeat(1, "s", "/", now=0)
     t.hidden(1, "s", now=1)
     t.heartbeat(1, "s", "/", now=6)
     assert t.due(now=20, hidden_grace=GRACE, stale=STALE) == []
+
+
+def test_hidden_heartbeat_does_not_cancel_alert() -> None:
+    # Real iPhone trace: iOS ran the page ~1-3 s after hiding and a heartbeat got out.
+    t = LiveTracker()
+    t.heartbeat(1, "s", "/", now=0)
+    t.hidden(1, "s", now=1)
+    t.heartbeat(1, "s", "/", now=2, visible=False)
+    assert len(t.due(now=16, hidden_grace=GRACE, stale=STALE)) == 1
 
 
 def test_resumed_session_can_alert_again() -> None:
@@ -75,6 +83,8 @@ def test_endpoints_drive_the_shared_tracker(authed_client: TestClient, user: Use
     assert authed_client.post(f"/api/tracking/{sid}/hidden").status_code == 204
     s = tracker.get(user.id, sid)
     assert s is not None and s.hidden_at is not None and s.resume_url == "/dev/gps"
+    authed_client.post(f"/api/tracking/{sid}/heartbeat", json={"visible": False})
+    assert s.hidden_at is not None
     assert authed_client.delete(f"/api/tracking/{sid}").status_code == 204
     assert tracker.get(user.id, sid) is None
 

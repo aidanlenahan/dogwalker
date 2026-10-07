@@ -57,11 +57,16 @@ export class LiveTrackingReporter {
   }
 
   private readonly heartbeat = () => {
+    // iOS keeps the page running for a few seconds after it's hidden. Check-ins
+    // from then must not tell the server we're fine, so skip them; the server
+    // also ignores any with visible=false that were already in flight.
+    const visible = document.visibilityState === 'visible'
+    if (!visible) return
     void fetch(`${this.base}/heartbeat`, {
       method: 'POST',
       credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ resume_url: this.resumeUrl }),
+      body: JSON.stringify({ resume_url: this.resumeUrl, visible }),
       keepalive: true,
     }).catch(() => undefined) // Offline: the next one will get through.
   }

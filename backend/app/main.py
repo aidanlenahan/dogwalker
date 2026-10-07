@@ -1,5 +1,6 @@
 import asyncio
 import contextlib
+import logging
 from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from urllib.parse import urlsplit
@@ -23,8 +24,19 @@ SECURITY_HEADERS = {
 }
 
 
+def _configure_logging() -> None:
+    """Show app.* INFO logs (e.g. GPS alerts sent) in journalctl next to uvicorn's."""
+    app_log = logging.getLogger("app")
+    if not app_log.handlers:
+        handler = logging.StreamHandler()
+        handler.setFormatter(logging.Formatter("%(levelname)s:     %(name)s: %(message)s"))
+        app_log.addHandler(handler)
+        app_log.setLevel(logging.INFO)
+
+
 def create_app() -> FastAPI:
     settings = get_settings()
+    _configure_logging()
     is_prod = settings.env == "production"
 
     @asynccontextmanager

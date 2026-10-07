@@ -36,7 +36,10 @@ describe('LiveTrackingReporter', () => {
     vi.advanceTimersByTime(HEARTBEAT_MS * 2)
     const url = '/api/tracking/2026-10-07T12%3A00%3A00.000Z/heartbeat'
     expect(calls()).toEqual([`POST ${url}`, `POST ${url}`, `POST ${url}`])
-    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({ resume_url: '/dev/gps' })
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({
+      resume_url: '/dev/gps',
+      visible: true,
+    })
     r.stop()
   })
 
@@ -48,6 +51,16 @@ describe('LiveTrackingReporter', () => {
     fetchMock.mockClear()
     setVisibility('visible')
     expect(calls()).toEqual(['POST /api/tracking/s/heartbeat'])
+    r.stop()
+  })
+
+  it('skips heartbeats while hidden (iOS runs hidden pages for a few seconds)', () => {
+    const r = new LiveTrackingReporter('s', '/')
+    r.start()
+    setVisibility('hidden')
+    fetchMock.mockClear()
+    vi.advanceTimersByTime(HEARTBEAT_MS * 3)
+    expect(calls()).toEqual([])
     r.stop()
   })
 
