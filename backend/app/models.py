@@ -67,6 +67,20 @@ class AuthSession(Base):
     user: Mapped[User] = relationship(lazy="joined")
 
 
+class PushSubscription(Base):
+    """A browser's Web Push subscription. One per device; the endpoint is the identity."""
+
+    __tablename__ = "push_subscriptions"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    endpoint: Mapped[str] = mapped_column(Text, unique=True)
+    p256dh: Mapped[str] = mapped_column(String(255))
+    auth: Mapped[str] = mapped_column(String(255))
+    user_agent: Mapped[str | None] = mapped_column(String(255))
+    created_at: Mapped[datetime] = _created_at()
+
+
 class Dog(Base):
     __tablename__ = "dogs"
 

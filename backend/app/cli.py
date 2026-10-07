@@ -2,6 +2,7 @@
 
 uv run python -m app.cli create-user <username> --display-name "Name"
 uv run python -m app.cli set-password <username>
+uv run python -m app.cli generate-vapid-keys
 """
 
 import argparse
@@ -66,6 +67,28 @@ def set_password(username: str) -> int:
     return 0
 
 
+def generate_vapid_keys() -> int:
+    """Print a new VAPID key pair as .env lines. Rotating keys invalidates every subscription."""
+    import base64
+
+    from cryptography.hazmat.primitives import serialization
+    from py_vapid import Vapid
+
+    vapid = Vapid()
+    vapid.generate_keys()
+
+    def b64url(raw: bytes) -> str:
+        return base64.urlsafe_b64encode(raw).rstrip(b"=").decode()
+
+    private = vapid.private_key.private_numbers().private_value.to_bytes(32, "big")
+    public = vapid.public_key.public_bytes(
+        serialization.Encoding.X962, serialization.PublicFormat.UncompressedPoint
+    )
+    print(f"DOGWALKER_VAPID_PUBLIC_KEY={b64url(public)}")
+    print(f"DOGWALKER_VAPID_PRIVATE_KEY={b64url(private)}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m app.cli")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -77,9 +100,13 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("set-password", help="Reset a user's password and sign them out")
     p.add_argument("username")
 
+    sub.add_parser("generate-vapid-keys", help="Print a Web Push key pair for .env")
+
     args = parser.parse_args(argv)
     if args.command == "create-user":
         return create_user(args.username, args.display_name)
+    if args.command == "generate-vapid-keys":
+        return generate_vapid_keys()
     return set_password(args.username)
 
 

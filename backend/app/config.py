@@ -29,6 +29,19 @@ class Settings(BaseSettings):
     login_max_failures: int = 10
     login_failure_window_seconds: int = 15 * 60
 
+    # Web Push (VAPID). Generate with `python -m app.cli generate-vapid-keys`.
+    # Push is disabled (endpoints return 503) until both keys are set.
+    vapid_public_key: str | None = None
+    vapid_private_key: str | None = None
+    vapid_subject: str = "mailto:admin@example.com"
+
+    # Live GPS watchdog (app/tracking.py): push "GPS paused" when a recording
+    # client goes quiet. Heartbeats arrive every ~5 s while the app is open.
+    # The hidden beacon is the main signal; missed heartbeats alone (no beacon) can
+    # also mean "no signal", so that fallback waits longer.
+    tracking_hidden_grace_seconds: int = 15
+    tracking_stale_seconds: int = 60
+
 
 @lru_cache
 def get_settings() -> Settings:

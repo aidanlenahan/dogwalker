@@ -13,6 +13,9 @@ if not _test_url:
 os.environ["DOGWALKER_DATABASE_URL"] = _test_url
 os.environ["DOGWALKER_COOKIE_SECURE"] = "false"  # TestClient talks plain http
 os.environ["DOGWALKER_ENV"] = "test"
+# Push off unless a test configures it; never reach real push services.
+os.environ["DOGWALKER_VAPID_PUBLIC_KEY"] = ""
+os.environ["DOGWALKER_VAPID_PRIVATE_KEY"] = ""
 
 from alembic.config import Config  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402

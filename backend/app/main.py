@@ -1,12 +1,16 @@
-from collections.abc import Awaitable, Callable
+import asyncio
+import contextlib
+from collections.abc import AsyncIterator, Awaitable, Callable
+from contextlib import asynccontextmanager
 from urllib.parse import urlsplit
 
 from fastapi import FastAPI, Request, Response
 from fastapi.responses import JSONResponse
 
 from app.config import get_settings
-from app.routers import auth, health
+from app.routers import auth, health, push, tracking
 from app.spa import mount_spa
+from app.tracking import watchdog
 
 UNSAFE_METHODS = {"POST", "PUT", "PATCH", "DELETE"}
 
@@ -22,7 +26,17 @@ SECURITY_HEADERS = {
 def create_app() -> FastAPI:
     settings = get_settings()
     is_prod = settings.env == "production"
+
+    @asynccontextmanager
+    async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+        task = asyncio.create_task(watchdog(settings))
+        yield
+        task.cancel()
+        with contextlib.suppress(asyncio.CancelledError):
+            await task
+
     app = FastAPI(
+        lifespan=lifespan,
         title="Dogwalker API",
         docs_url=None if is_prod else "/api/docs",
         redoc_url=None,
@@ -49,6 +63,8 @@ def create_app() -> FastAPI:
 
     app.include_router(health.router)
     app.include_router(auth.router)
+    app.include_router(push.router)
+    app.include_router(tracking.router)
 
     if (settings.frontend_dist / "index.html").is_file():
         mount_spa(app, settings.frontend_dist)
