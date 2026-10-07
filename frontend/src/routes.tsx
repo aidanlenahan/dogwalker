@@ -3,6 +3,7 @@ import type { RouteObject } from 'react-router'
 import { RequireAuth } from './auth/RequireAuth'
 import { AppShell } from './components/AppShell/AppShell'
 import { DashboardPage } from './pages/Dashboard/DashboardPage'
+import { GpsSpikePage } from './pages/GpsSpike/GpsSpikePage'
 import { LoginPage } from './pages/Login/LoginPage'
 import { NotFoundPage } from './pages/NotFound/NotFoundPage'
 import { StubPage } from './pages/Stub/StubPage'
@@ -30,6 +31,8 @@ export const routes: RouteObject[] = [
           { path: '/walk/:id/review', element: <StubPage title="Review walk" phase={4} /> },
           { path: '/walk/:id', element: <StubPage title="Walk" phase={3} /> },
           { path: '/profile/edit', element: <StubPage title="Edit profile" phase={9} /> },
+          // Throwaway GPS feasibility spike (TODO Phase 2).
+          { path: '/dev/gps', element: <GpsSpikePage /> },
         ],
       },
     ],

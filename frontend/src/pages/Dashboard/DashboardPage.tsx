@@ -27,6 +27,11 @@ export function DashboardPage() {
         <h2 className="section-label">Recent walks</h2>
         <p className="card muted">No walks yet. Your finished walks will show up here.</p>
       </section>
+
+      {/* Throwaway: the installed PWA has no URL bar. Remove with the GPS spike. */}
+      <Link to="/dev/gps" className="btn btn-ghost">
+        GPS test (dev)
+      </Link>
     </div>
   )
 }
