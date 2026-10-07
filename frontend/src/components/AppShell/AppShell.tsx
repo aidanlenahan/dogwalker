@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { NavLink, Outlet, useNavigate } from 'react-router'
+import { Link, NavLink, Outlet, useNavigate } from 'react-router'
 import { useAuth } from '../../auth/context'
-import { DogIcon, HomeIcon, PawIcon, UserIcon } from '../icons'
+import { DogIcon, HomeIcon, PawIcon, SettingsIcon, UserIcon } from '../icons'
+import { NotificationNudge } from '../NotificationNudge/NotificationNudge'
 
 const NAV = [
   { to: '/dashboard', label: 'Home', Icon: HomeIcon },
@@ -28,12 +29,18 @@ export function AppShell() {
           <PawIcon className="brand-icon" />
           Dogwalker
         </span>
-        <button className="btn btn-ghost" onClick={onLogout} disabled={signingOut}>
-          {signingOut ? 'Signing out…' : 'Sign out'}
-        </button>
+        <div className="shell-actions">
+          <Link to="/settings" className="icon-btn" aria-label="Settings">
+            <SettingsIcon />
+          </Link>
+          <button className="btn btn-ghost" onClick={onLogout} disabled={signingOut}>
+            {signingOut ? 'Signing out…' : 'Sign out'}
+          </button>
+        </div>
       </header>
 
       <main className="shell-main">
+        <NotificationNudge />
         <Outlet />
       </main>
 

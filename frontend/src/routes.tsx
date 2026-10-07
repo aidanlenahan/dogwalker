@@ -6,6 +6,7 @@ import { DashboardPage } from './pages/Dashboard/DashboardPage'
 import { GpsSpikePage } from './pages/GpsSpike/GpsSpikePage'
 import { LoginPage } from './pages/Login/LoginPage'
 import { NotFoundPage } from './pages/NotFound/NotFoundPage'
+import { SettingsPage } from './pages/Settings/SettingsPage'
 import { StubPage } from './pages/Stub/StubPage'
 
 // PRD §28 routes. Stubs are filled in by later TODO phases.
@@ -31,6 +32,7 @@ export const routes: RouteObject[] = [
           { path: '/walk/:id/review', element: <StubPage title="Review walk" phase={4} /> },
           { path: '/walk/:id', element: <StubPage title="Walk" phase={3} /> },
           { path: '/profile/edit', element: <StubPage title="Edit profile" phase={9} /> },
+          { path: '/settings', element: <SettingsPage /> },
           // Throwaway GPS feasibility spike (TODO Phase 2).
           { path: '/dev/gps', element: <GpsSpikePage /> },
         ],

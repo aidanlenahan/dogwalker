@@ -11,6 +11,10 @@ export default defineConfig({
     VitePWA({
       registerType: 'prompt',
       injectRegister: false, // registered from <UpdateBanner />
+      // Custom worker for Web Push (src/sw/sw.ts); precaching is the same as before.
+      strategies: 'injectManifest',
+      srcDir: 'src/sw',
+      filename: 'sw.ts',
       includeAssets: ['favicon.ico', 'logo.svg', 'apple-touch-icon-180x180.png'],
       manifest: {
         name: 'Dogwalker',
@@ -34,12 +38,8 @@ export default defineConfig({
           },
         ],
       },
-      workbox: {
-        // App shell only. API responses must stay live (never served from cache).
+      injectManifest: {
         globPatterns: ['**/*.{js,css,html,svg,png,ico,webmanifest}'],
-        navigateFallback: '/index.html',
-        navigateFallbackDenylist: [/^\/api\//],
-        cleanupOutdatedCaches: true,
       },
     }),
   ],

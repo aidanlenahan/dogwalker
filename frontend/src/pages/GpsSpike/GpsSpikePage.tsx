@@ -4,6 +4,8 @@
 // Delete this folder (and its route + dashboard link) once docs/gps-findings.md is written.
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router'
+import { usePushStatus } from '../../hooks/usePushStatus'
+import { LiveTrackingReporter } from '../../services/liveTracking'
 import {
   addEntry,
   clearAll,
@@ -81,6 +83,8 @@ export function GpsSpikePage() {
   const sessionRef = useRef<string | null>(null)
   const watchRef = useRef<number | null>(null)
   const wakeRef = useRef<WakeLockSentinel | null>(null)
+  const reporterRef = useRef<LiveTrackingReporter | null>(null)
+  const [pushStatus] = usePushStatus()
 
   const log = useCallback(async (kind: EventEntry['kind'], name: string, detail?: string) => {
     const s = sessionRef.current
@@ -134,6 +138,13 @@ export function GpsSpikePage() {
     watchRef.current = null
   }, [])
 
+  // Server-side "GPS recording paused" push alert (services/liveTracking.ts).
+  const startReporter = useCallback((s: string) => {
+    reporterRef.current?.pause()
+    reporterRef.current = new LiveTrackingReporter(s, '/dev/gps')
+    reporterRef.current.start()
+  }, [])
+
   const loadSession = useCallback(async (s: string | null) => {
     sessionRef.current = s
     setSession(s)
@@ -155,6 +166,7 @@ export function GpsSpikePage() {
         setRecording(true)
         await log('event', 'resumed', 'page loaded with an active session')
         startWatch()
+        startReporter(active)
       } catch (e) {
         setProblem(`IndexedDB unavailable: ${(e as Error).message}`)
       }
@@ -163,8 +175,10 @@ export function GpsSpikePage() {
       cancelled = true
       if (watchRef.current !== null) void log('event', 'unmount')
       stopWatch()
+      // Not recording while away from this page, so let the server alert.
+      reporterRef.current?.pause()
     }
-  }, [loadSession, log, startWatch, stopWatch])
+  }, [loadSession, log, startWatch, startReporter, stopWatch])
 
   // Lifecycle events while recording.
   useEffect(() => {
@@ -239,10 +253,13 @@ export function GpsSpikePage() {
     const standalone = matchMedia('(display-mode: standalone)').matches
     await log('event', 'start', `standalone=${standalone} ua=${navigator.userAgent}`)
     startWatch()
+    startReporter(s)
   }
 
   async function stop() {
     stopWatch()
+    reporterRef.current?.stop()
+    reporterRef.current = null
     await log('event', 'stop')
     writeLS(ACTIVE_KEY, null)
     setRecording(false)
@@ -298,6 +315,17 @@ export function GpsSpikePage() {
           Start recording
         </button>
       )}
+
+      <p className="muted">
+        Pause alert:{' '}
+        {pushStatus === 'on' ? (
+          'on. Lock the phone while recording and a notification should arrive within ~15 s.'
+        ) : (
+          <>
+            off. <Link to="/settings">Turn on notifications</Link> to get one if recording stops.
+          </>
+        )}
+      </p>
 
       <label className="spike-toggle">
         <input
